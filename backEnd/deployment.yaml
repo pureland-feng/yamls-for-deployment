@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back-end-api
+  labels:
+    app: back-end-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back-end-api
+  template:
+    metadata:
+      labels:
+        app: back-end-api
+    spec:
+      initContainers:
+      - name: skywalking-agent-gateway
+        image: skywalking-agent:6.4.0
+        imagePullPolicy: Always
+        command: ['cp','-rf','/agent','tmp']
+        volumeMounts:
+        - mountPath: /tmp
+          name: sky-agent-volume
+      containers:
+      - name: back-end-api
+        env:
+        - name: APOLLO_BOOTSTRAP_NAMESPACES
+          value: {apolloNamespace}
+        - name: APOLLO_META
+          value: {apolloMeta}
+        - name: APP_ID
+          value: back-end-api
+        - name: ENV
+          value: dev
+        - name: server_port
+          value: "80"
+        image: {appImage}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /tmp
+          name: sky-agent-volume
+      imagePullSecrets:
+      - name: jenkins-harbor-registry
+      volumes:
+      - name: sky-agent-volume
+        emptyDir: {}

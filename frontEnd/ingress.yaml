@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: front-end-ingress
+  labels:
+    app: front-end
+spec:
+  tls:
+  - hosts:
+    - {deployEnv}-test.com
+    secretName: emkcp.com-secret
+  rules:
+    - host: {deployEnv}-test.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: front-end-service
+              servicePort: 80

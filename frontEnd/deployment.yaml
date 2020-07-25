@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-end
+  labels:
+    app: front-end
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front-end
+  template:
+    metadata:
+      labels:
+        app: front-end
+    spec:
+      containers:
+      - name: front-end
+        image: {appImage}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: web-config-volume
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: nginx-default-config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-log-volume
+          mountPath: /var/log/nginx
+      imagePullSecrets:
+      - name: jenkins-harbor-registry
+      volumes:
+      - name: web-config-volume
+        configMap:
+          name: web-config
+      - name: nginx-default-config-volume
+        configMap:
+          name: nginx-default-config
+      - name: nginx-log-volume
+        hostPath:
+          path: /var/log/containers
+          type: DirectoryOrCreate
